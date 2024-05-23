@@ -1,12 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import signal
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-from matplotlib import cm
 from scipy.signal import savgol_filter, medfilt2d, wiener, medfilt
 from scipy.optimize import least_squares
-from matplotlib.colors import Normalize
 from matplotlib.ticker import FormatStrFormatter
 
 def polynomial_surface(coefficients, x, y, degree):
@@ -27,8 +22,6 @@ def fit_polynomial(data,degree):
     X_flat, Y_flat = np.meshgrid(np.arange(data.shape[1]), np.arange(data.shape[0]))
     X_flat = X_flat.flatten()
     Y_flat = Y_flat.flatten()
-
-    # Define the 2D polynomial function
 
     # Initial guess for coefficients
     initial_guess = np.ones((degree + 1) * (degree + 2) // 2)
@@ -95,12 +88,14 @@ def replace_nan_pixels(data, nan_pixels):
                     data[i, j] = np.nanmean(data[i - 1:i + 1, j - 1:j + 1])
     return data
 
+# jump points in x and y axis
 jumps_x = [0, 255, 511, 767, 1023, 1279, 1535, 1791, 2047, 2303]
 jumps_y = [0, 235, 471, 707, 943, 1179, 1415, 1651, 1887]  # jump points in y
 
 CE = 6526019.67538 # @300KV - lambda = 1.9687 pm
+
 #open text file using np
-E_first_quadrant_offset = np.loadtxt('FirstQuadrant_UnwrappedPhase_2V_WithOffSet_22012024Ed_TXT.txt')
+E_first_quadrant_offset = np.loadtxt('holography data.txt')
 central_phase_simulation = np.loadtxt('integ3.txt')
 whole_phase_simulation = np.loadtxt('integ.txt')
 print("Experiment data shape:  " + str(E_first_quadrant_offset.shape))
@@ -108,7 +103,6 @@ print("Simulation whole device data shape:  " + str(central_phase_simulation.sha
 print("Simulation data shape:  " + str(whole_phase_simulation.shape))
 
 original_data = E_first_quadrant_offset.copy()
-
 central = central_phase_simulation * CE
 whole = whole_phase_simulation * CE
 central = central * -1
@@ -117,8 +111,6 @@ central = central - np.min(central)
 whole = whole - np.min(whole)
 central = central[0:999, 0:1000]
 print(central.shape)
-
-
 
 simulation_pixelized = np.zeros((central.shape[0],central.shape[1]))
 big_pixel_size_x = 125
@@ -134,7 +126,6 @@ for i in range(0, central.shape[0], big_pixel_size_y): # y axis
         chunk = central[i:i+big_pixel_size_y, j:j+big_pixel_size_x]
         average = np.mean(chunk)
         simulation_pixelized[i:i+big_pixel_size_y, j:j+big_pixel_size_x] = average
-
 
 j_y = [0, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2304]
 j_x = [0, 236, 472, 708, 944, 1180, 1416, 1652, 1888]
@@ -257,19 +248,9 @@ ax2.plot_surface(X, Y, final_image_surface.T, cmap='magma')
 ax2.set_title('Phase profile (Experimental)', fontsize=18, weight='bold')
 ax2.set_xlabel('x(μm)', fontsize=16, labelpad=20)
 ax2.set_ylabel('y(μm)', fontsize=16, labelpad=20)
-# ax2.set_zlabel('Phase (rad)', fontsize=14, labelpad=20, rotation=0)
 ax2.view_init(30, -30)
-# 10 ticks for x
 ax2.set_xticks(np.linspace(0, 2304, 10))
-# 9 ticks for y
 ax2.set_yticks(np.linspace(0, 1888, 9))
-# ax2.set_xticks(j_x)
-# ax2.set_yticks(j_y)
-# x_ticks_labels_2 = x_ticks_labels[::-1]
-# ax2.set_xticklabels(x_ticks_labels_2, minor=False, rotation=0, fontsize=16)
-# ax2.set_yticklabels(y_ticks_labels, minor=False, rotation=0, fontsize=16)
-# ax2.set_zticks(np.linspace(0, np.max(final_image), 7))
-# ax2.set_zticklabels(np.linspace(0, round(np.max(final_image)), 7), minor=False, rotation=0, fontsize=16, verticalalignment='center_baseline', horizontalalignment='right')
 
 
 # 3D plot
@@ -282,10 +263,6 @@ ax3.set_ylabel('y(μm)', fontsize=16, labelpad=20)
 ax3.view_init(30, -120)
 ax3.set_xticks(np.linspace(0, 1000, 9))
 ax3.set_yticks(np.linspace(0, 999, 10))
-# ax3.set_xticks(x_ticks)
-# ax3.set_yticks(x_ticks)
-# ax3.set_xticklabels(x_ticks_labels, minor=False, rotation=0, fontsize=16)
-# ax3.set_yticklabels(x_ticks_labels, minor=False, rotation=0, fontsize=16)
 ax3.set_zticks(np.linspace(0, np.max(simulation_pixelized), 7))
 ax3.set_zticklabels(np.linspace(0, np.max(simulation_pixelized), 7), minor=False, rotation=0, fontsize=16, verticalalignment='center_baseline', horizontalalignment='right')
 # z ticks formatstyle
